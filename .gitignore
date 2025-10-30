@@ -1,0 +1,20 @@
+# ========================================
+# Archivos y carpetas que NO se suben a Git
+# ========================================
+
+# Dependencias
+node_modules/
+
+# Archivos de entorno
+.env
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de base de datos (diseños Workbench)
+db/*.mwb
+
+# Archivos temporales
+*.log
+npm-debug.log*
