@@ -2,24 +2,20 @@
 --   Base de Datos: vive_salud
 --   Autor: Ignacio Méndez
 --   Descripción: Estructura y datos base para la app Vive+Salud
---   Fecha: 2025-10-29
+--   Fecha: 2025-10-29 (actualizado con tabla usuarios para CRUD y password)
 -- ============================================================
 
 -- ============================================================
 -- CONFIGURACIÓN Y USUARIO DEL PROYECTO
 -- ============================================================
 
--- Crear base de datos con codificación UTF-8
 CREATE DATABASE IF NOT EXISTS vive_salud
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
 USE vive_salud;
 
--- Crear usuario con el nombre del proyecto
 CREATE USER IF NOT EXISTS 'vive_salud'@'localhost' IDENTIFIED BY '12345';
-
--- Conceder permisos completos al usuario sobre la base de datos
 GRANT ALL PRIVILEGES ON vive_salud.* TO 'vive_salud'@'localhost';
 FLUSH PRIVILEGES;
 
@@ -194,11 +190,9 @@ ALTER TABLE `abc_order_history`
 -- DATOS INICIALES
 -- ============================================================
 
--- Idioma base
 INSERT INTO `abc_languages` (`language_id`, `name`, `code`, `locale`)
 VALUES (1, 'Español', 'es', 'es_MX');
 
--- Categorías
 INSERT INTO `abc_categories` (`category_id`, `parent_id`, `status`) VALUES
 (1, 0, 1),
 (2, 0, 1),
@@ -210,7 +204,6 @@ VALUES
 (2, 1, 'Servicios Premium y Suscripciones', 'Accede a planes avanzados y asesorías virtuales.'),
 (3, 1, 'Alianzas y Productos Asociados', 'Colaboraciones y productos de bienestar ofrecidos en conjunto con aliados.');
 
--- Productos
 INSERT INTO `abc_products` (`product_id`, `model`, `sku`, `price`, `quantity`)
 VALUES
 (1, 'APP001', 'APPBASICA', 0.0000, 1000),
@@ -229,7 +222,6 @@ VALUES
 (14, 'SUP001', 'SUPLEMENTOS', 0.0000, 1000),
 (15, 'LATAM001', 'EXPANSION', 0.0000, 100);
 
--- Descripciones de productos
 INSERT INTO `abc_product_descriptions` (`product_id`, `language_id`, `name`, `description`)
 VALUES
 (1, 1, 'App móvil', 'Plataforma con los cinco pilares del bienestar: hidratación, nutrición, ejercicio, sueño y salud mental.'),
@@ -248,12 +240,31 @@ VALUES
 (14, 1, 'Suplementos aliados', 'Venta de suplementos y productos de nutrición de marcas certificadas.'),
 (15, 1, 'Expansión LATAM y España', 'Estrategia de crecimiento internacional con alianzas locales.');
 
--- Relaciones productos–categorías
 INSERT INTO `abc_products_to_categories` (`product_id`, `category_id`)
 VALUES
 (1, 1), (2, 1), (3, 1), (4, 1), (5, 1),
 (6, 2), (7, 2), (8, 2), (9, 2), (10, 2),
 (11, 3), (12, 3), (13, 3), (14, 3), (15, 3);
+
+-- ============================================================
+-- TABLA DE USUARIOS PARA CRUD CON CONTRASEÑA
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  nombre_completo VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  telefono VARCHAR(15),
+  fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insertar datos de prueba (contraseña en texto plano: "123456")
+INSERT INTO usuarios (nombre_completo, email, password, telefono)
+VALUES 
+('Ignacio Méndez', 'ignacio@example.com', '123456', '9611234567'),
+('Ana López', 'ana.lopez@example.com', '123456', '9615558888'),
+('Carlos Ruiz', 'carlos.ruiz@example.com', '123456', '9619997777');
 
 -- ============================================================
 -- FIN DEL SCRIPT
