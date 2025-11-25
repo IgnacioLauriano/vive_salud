@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Vive+Salud - Productos</title>
+
+    <style>
+        :root {
+            --primary: #2b6777;
+            --primary-dark: #1f4a56;
+            --accent: #52ab98;
+            --accent-dark: #3a8b7a;
+            --warning: #ff7f50;
+            --warning-dark: #e06b3d;
+            --bg: #f2f6f9;
+            --card-bg: #ffffff;
+            --text-main: #1c2733;
+            --text-muted: #6b7380;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+            --shadow-strong: 0 18px 45px rgba(15, 23, 42, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(82, 171, 152, 0.18), transparent 55%),
+                radial-gradient(circle at bottom right, rgba(43, 103, 119, 0.16), transparent 55%),
+                var(--bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        /* ====== HEADER ====== */
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 14px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        header h1 { 
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header h1::before {
+            content: "🩺";
+            font-size: 24px;
+        }
+
+        #headerButtons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            padding: 9px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn::after {
+            content: "›";
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .btn:hover { 
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.18);
+            border-color: rgba(255,255,255,0.65);
+        }
+
+        #usuarioLogueado {
+            font-weight: 500;
+            margin-right: 4px;
+            color: #e9f5ff;
+            font-size: 14px;
+        }
+
+        /* ====== LAYOUT GENERAL ====== */
+
+        .container {
+            width: min(1200px, 92%);
+            margin: 32px auto 48px;
+        }
+
+        h2 {
+            color: var(--primary);
+            padding-bottom: 8px;
+            margin: 0 0 20px;
+            font-size: 26px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        h2::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 110%;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), rgba(82,171,152,0));
+        }
+
+        /* título principal productos */
+        .container > h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container > h2::before {
+            content: "";
+            width: 34px;
+            height: 34px;
+            border-radius: 14px;
+            background: radial-gradient(circle at 30% 20%, #ffffff, #ffd6c2);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+            display: inline-block;
+            position: relative;
+        }
+
+        .container > h2 span {
+            font-size: 18px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* ====== CATEGORÍAS ====== */
+
+        .categoria { 
+            margin-bottom: 46px; 
+            padding: 22px 22px 28px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            backdrop-filter: blur(6px);
+        }
+
+        .categoria > h2 {
+            font-size: 20px;
+            margin-bottom: 18px;
+            padding-bottom: 4px;
+        }
+
+        .categoria > h2::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 0 0 6px rgba(82, 171, 152, 0.2);
+        }
+
+        .categoria > h2::after {
+            width: 70px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), rgba(82,171,152,0));
+        }
+
+        /* ====== GRID DE PRODUCTOS ====== */
+
+        .productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 22px;
+            margin-top: 10px;
+        }
+
+        .producto {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 18px 18px 20px;
+            text-align: left;
+            box-shadow: var(--shadow-soft);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .producto::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(82, 171, 152, 0.13), transparent 55%);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .producto:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-strong);
+            border-color: rgba(82, 171, 152, 0.55);
+        }
+
+        .producto:hover::before {
+            opacity: 1;
+        }
+
+        .producto h3 { 
+            margin: 0 0 6px; 
+            color: var(--primary-dark); 
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .producto p { 
+            margin: 6px 0; 
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .precio { 
+            font-weight: 700; 
+            font-size: 20px; 
+            color: #17505b; 
+            margin: 10px 0 6px;
+        }
+
+        .precio::before {
+            content: "Precio ";
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(107, 115, 128, 0.95);
+            font-weight: 500;
+            display: block;
+            margin-bottom: 1px;
+        }
+
+        .producto .btn {
+            background: var(--warning);
+            color: white;
+            padding: 7px 15px;
+            font-size: 13px;
+            border-radius: 999px;
+            text-decoration: none;
+            border: none;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(224, 107, 61, 0.4);
+        }
+
+        .producto .btn::after {
+            content: "🛒";
+            font-size: 14px;
+        }
+
+        .producto .btn:hover {
+            background: var(--warning-dark);
+            box-shadow: 0 7px 18px rgba(224, 107, 61, 0.5);
+            transform: translateY(-1px);
+        }
+
+        /* ====== ESTADO ERROR / MENSAJES ====== */
+
+        #productosContainer p {
+            text-align: center;
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        /* ====== RESPONSIVE ====== */
+
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 18px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            header h1 {
+                font-size: 22px;
+            }
+
+            .container {
+                width: 92%;
+                margin-top: 24px;
+            }
+
+            .categoria {
+                padding: 18px 16px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #headerButtons {
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+
+            .btn {
+                width: auto;
+            }
+
+            .container > h2 {
+                font-size: 22px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Vive+Salud</h1>
+    <div id="headerButtons">
+        <a href="/registro.html" class="btn" id="btnCrearCuenta">Crear Cuenta</a>
+        <a href="/login.html" class="btn" id="btnIniciarSesion">Iniciar Sesión</a>
+        <span id="usuarioLogueado"></span>
+        <button class="btn" id="btnCerrarSesion" style="display:none;">Cerrar Sesión</button>
+    </div>
+</header>
+
+<div class="container">
+    <h2>🛒 Productos disponibles <span>Cuida tu bienestar con Vive+Salud</span></h2>
+    <div id="productosContainer"></div>
+</div>
+
+<script>
+async function cargarProductos() {
+    try {
+        const res = await fetch("/productos");
+        if (!res.ok) throw new Error("No se pudieron obtener los productos");
+
+        const productos = await res.json();
+
+        const categorias = {};
+        productos.forEach(p => {
+            if (!categorias[p.categoria]) categorias[p.categoria] = [];
+            categorias[p.categoria].push(p);
+        });
+
+        const cont = document.getElementById("productosContainer");
+        cont.innerHTML = "";
+
+        for (const [categoria, prods] of Object.entries(categorias)) {
+            const catDiv = document.createElement("div");
+            catDiv.classList.add("categoria");
+            catDiv.innerHTML = `<h2>${categoria}</h2>`;
+
+            const grid = document.createElement("div");
+            grid.classList.add("productos");
+
+            prods.forEach(p => {
+                const prodDiv = document.createElement("div");
+                prodDiv.classList.add("producto");
+                prodDiv.innerHTML = `
+                    <h3>${p.nombre}</h3>
+                    <p class="precio">$${p.precio.toFixed(2)}</p>
+                    <p>${p.descripcion}</p>
+                    <a href="#" class="btn">Comprar</a>
+                `;
+                grid.appendChild(prodDiv);
+            });
+
+            catDiv.appendChild(grid);
+            cont.appendChild(catDiv);
+        }
+
+    } catch (error) {
+        console.error("Error cargando productos:", error);
+        document.getElementById("productosContainer").innerHTML = "<p>No se pudieron cargar los productos.</p>";
+    }
+}
+
+// === Manejo de sesión ===
+const btnCrear = document.getElementById("btnCrearCuenta");
+const btnLogin = document.getElementById("btnIniciarSesion");
+const btnCerrar = document.getElementById("btnCerrarSesion");
+const usuarioSpan = document.getElementById("usuarioLogueado");
+
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (usuario) {
+    usuarioSpan.textContent = `Hola, ${usuario.nombre_completo}`;
+    btnCrear.style.display = "none";
+    btnLogin.style.display = "none";
+    btnCerrar.style.display = "inline-block";
+}
+
+btnCerrar.addEventListener("click", () => {
+    localStorage.removeItem("usuario");
+    location.reload();
+});
+
+cargarProductos();
+</script>
+
+</body>
+</html>
