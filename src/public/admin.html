@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Administrativo - Vive+Salud</title>
+
+  <style>
+    :root {
+      --primary: #2b6777;
+      --primary-light: #3b8f9e;
+      --primary-dark: #1f4d5a;
+      --accent: #52ab98;
+      --danger: #c0392b;
+      --success: #27ae60;
+      --bg: #eef3f6;
+      --white: #ffffff;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
+      --shadow-lg: 0 10px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      background: var(--bg);
+      color: #1e3e4a;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: var(--white);
+      padding: 22px;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    #adminName {
+      font-weight: bold;
+      color: #dff8ff;
+    }
+
+    /* LAYOUT */
+    .container {
+      display: flex;
+      padding: 25px;
+      gap: 25px;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 260px;
+      background: var(--white);
+      padding: 25px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 19px;
+      color: var(--primary-dark);
+      text-align: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+    }
+
+    .sidebar button {
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 12px;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: 0.25s;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .sidebar button:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .logout-btn {
+      background: var(--danger) !important;
+    }
+
+    .logout-btn:hover {
+      background: #e74c3c !important;
+    }
+
+    /* MAIN PANEL */
+    .main {
+      flex: 1;
+      padding: 25px;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 24px;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2::before {
+      content: "📁";
+      font-size: 26px;
+    }
+
+    /* Add Button */
+    .add-btn {
+      background: var(--success);
+      border: none;
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: white;
+      margin-bottom: 15px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: 0.25s;
+    }
+
+    .add-btn:hover {
+      background: #2ecc71;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    table thead {
+      background: var(--primary);
+      color: white;
+    }
+
+    table th,
+    table td {
+      padding: 14px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    table tr:hover {
+      background: #f2fbfd;
+    }
+
+    /* ACTION BUTTONS */
+    .actions button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      color: white;
+      margin-right: 6px;
+      transition: 0.2s;
+    }
+
+    .edit-btn {
+      background: var(--primary-light);
+    }
+
+    .edit-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .delete-btn {
+      background: var(--danger);
+    }
+
+    .delete-btn:hover {
+      background: #e74c3c;
+    }
+
+    /* MODAL */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.35);
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      width: 450px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      animation: fadeIn 0.25s ease;
+    }
+
+    .modal-content h3 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary-dark);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .modal button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      border: none;
+      color: white;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .modal .close-btn {
+      background: var(--danger);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  Panel de Administración — Bienvenido <span id="adminName"></span>
+</header>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h3>Catálogos</h3>
+    <button onclick="loadSection('productos')">📦 Productos</button>
+    <button onclick="loadSection('categorias')">🏷️ Categorías</button>
+    <button onclick="loadSection('clientes')">👥 Clientes</button>
+    <button class="logout-btn" onclick="logout()">🚪 Cerrar sesión</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <h2 id="sectionTitle">Selecciona un catálogo</h2>
+    <button id="addBtn" class="add-btn" style="display:none" onclick="openForm()">+ Agregar</button>
+    <div id="content"></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3 id="formTitle"></h3>
+    <form id="entityForm"></form>
+    <button class="close-btn" onclick="closeForm()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+  let currentSection = "";
+  let editingId = null;
+
+  document.getElementById("adminName").innerText =
+    JSON.parse(localStorage.getItem("usuario"))?.nombre_completo ?? "Admin";
+  async function loadSection(section) {
+    currentSection = section;
+    editingId = null;
+
+    document.getElementById("sectionTitle").innerText =
+      section.charAt(0).toUpperCase() + section.slice(1);
+
+    document.getElementById("addBtn").style.display = "block";
+
+    const res = await fetch(`/admin/${section}`);
+    const data = await res.json();
+
+    renderTable(section, data);
+  }
+
+  function renderTable(section, data) {
+    let html = "<table><thead><tr>";
+
+    if (section === "productos") {
+      html += `
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Modelo</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Categoría</th>
+        <th>Acciones</th>
+      `;
+    } else if (section === "categorias") {
+      html += `
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+      `;
+    } else if (section === "clientes") {
+      html += `
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Acciones</th>
+      `;
+    }
+
+    html += "</tr></thead><tbody>";
+
+    data.forEach(row => {
+      html += "<tr>";
+      if (section === "productos") {
+        html += `
+          <td>${row.id}</td>
+          <td>${row.name ?? ""}</td>
+          <td>${row.model}</td>
+          <td>$${row.price}</td>
+          <td>${row.quantity}</td>
+          <td>${row.categoria_nombre ?? "—"}</td>
+        `;
+      } else if (section === "categorias") {
+        html += `
+          <td>${row.id}</td>
+          <td>${row.name}</td>
+          <td>${row.description ?? ""}</td>
+        `;
+      } else if (section === "clientes") {
+        html += `
+          <td>${row.id}</td>
+          <td>${row.nombre_completo}</td>
+          <td>${row.email}</td>
+          <td>${row.telefono}</td>
+        `;
+      }
+
+      html += `
+        <td class="actions">
+          <button class="edit-btn" onclick="editEntity('${section}', ${row.id})">Editar</button>
+          <button class="delete-btn" onclick="deleteEntity('${section}', ${row.id})">Eliminar</button>
+        </td>
+      `;
+
+      html += "</tr>";
+    });
+
+    html += "</tbody></table>";
+    document.getElementById("content").innerHTML = html;
+  }
+
+  async function openForm(isEdit = false) {
+    const modal = document.getElementById("modal");
+    const form = document.getElementById("entityForm");
+    const title = document.getElementById("formTitle");
+
+    form.innerHTML = "";
+    editingId = isEdit ? editingId : null;
+
+    if (currentSection === "productos") {
+      title.innerText = isEdit ? "Editar Producto" : "Agregar Producto";
+
+      const categorias = await fetch("/admin/categorias").then(r => r.json());
+
+      form.innerHTML = `
+        <div class="form-group">
+          <label>Nombre:</label>
+          <input type="text" id="name">
+        </div>
+
+        <div class="form-group">
+          <label>Modelo:</label>
+          <input type="text" id="model">
+        </div>
+
+        <div class="form-group">
+          <label>Precio:</label>
+          <input type="number" id="price" step="0.01">
+        </div>
+
+        <div class="form-group">
+          <label>Stock:</label>
+          <input type="number" id="quantity">
+        </div>
+
+        <div class="form-group">
+          <label>Categoría:</label>
+          <select id="category_id">
+            ${categorias.map(c => `
+              <option value="${c.id}">${c.name}</option>
+            `).join("")}
+          </select>
+        </div>
+
+        <button type="button" onclick="saveEntity()">Guardar</button>
+      `;
+
+    } else if (currentSection === "categorias") {
+      title.innerText = isEdit ? "Editar Categoría" : "Agregar Categoría";
+
+      form.innerHTML = `
+        <div class="form-group">
+          <label>Nombre:</label>
+          <input type="text" id="name">
+        </div>
+
+        <div class="form-group">
+          <label>Descripción:</label>
+          <textarea id="description"></textarea>
+        </div>
+
+        <button type="button" onclick="saveEntity()">Guardar</button>
+      `;
+
+    } else if (currentSection === "clientes") {
+      title.innerText = isEdit ? "Editar Cliente" : "Agregar Cliente";
+
+      form.innerHTML = `
+        <div class="form-group">
+          <label>Nombre:</label>
+          <input type="text" id="nombre_completo">
+        </div>
+
+        <div class="form-group">
+          <label>Email:</label>
+          <input type="email" id="email">
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono:</label>
+          <input type="text" id="telefono">
+        </div>
+
+        <button type="button" onclick="saveEntity()">Guardar</button>
+      `;
+    }
+
+    modal.style.display = "flex";
+  }
+
+  async function editEntity(section, id) {
+    editingId = id;
+    openForm(true);
+
+    const res = await fetch(`/admin/${section}`);
+    const data = await res.json();
+    const item = data.find(x => x.id == id);
+
+    if (currentSection === "productos") {
+      document.getElementById("name").value = item.name;
+      document.getElementById("model").value = item.model;
+      document.getElementById("price").value = item.price;
+      document.getElementById("quantity").value = item.quantity;
+      document.getElementById("category_id").value = item.categoria_id;
+    } else if (currentSection === "categorias") {
+      document.getElementById("name").value = item.name;
+      document.getElementById("description").value = item.description ?? "";
+    } else if (currentSection === "clientes") {
+      document.getElementById("nombre_completo").value = item.nombre_completo;
+      document.getElementById("email").value = item.email;
+      document.getElementById("telefono").value = item.telefono;
+    }
+  }
+
+  async function saveEntity() {
+    let body = {};
+    let method = editingId ? "PUT" : "POST";
+    let url = `/admin/${currentSection}` + (editingId ? `/${editingId}` : "");
+
+    if (currentSection === "productos") {
+      body = {
+        name: document.getElementById("name").value,
+        model: document.getElementById("model").value,
+        price: document.getElementById("price").value,
+        quantity: document.getElementById("quantity").value,
+        category_id: document.getElementById("category_id").value
+      };
+    } else if (currentSection === "categorias") {
+      body = {
+        name: document.getElementById("name").value,
+        description: document.getElementById("description").value
+      };
+    } else if (currentSection === "clientes") {
+      body = {
+        nombre_completo: document.getElementById("nombre_completo").value,
+        email: document.getElementById("email").value,
+        telefono: document.getElementById("telefono").value
+      };
+    }
+
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    closeForm();
+    loadSection(currentSection);
+  }
+
+  async function deleteEntity(section, id) {
+    if (!confirm("¿Seguro que deseas eliminar este registro?")) return;
+
+    await fetch(`/admin/${section}/${id}`, { method: "DELETE" });
+
+    loadSection(section);
+  }
+
+  function closeForm() {
+    document.getElementById("modal").style.display = "none";
+  }
+
+  function logout() {
+    localStorage.removeItem("usuario");
+    window.location.href = "/login.html";
+  }
+</script>
+
+</body>
+</html>

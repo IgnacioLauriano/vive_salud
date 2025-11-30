@@ -88,7 +88,6 @@
       font-size: 13px;
     }
 
-    /* 👁️ Wrapper para contraseña con ojito */
     .password-wrapper {
       position: relative;
       margin-bottom: 10px;
@@ -180,7 +179,6 @@
       text-decoration: underline;
     }
 
-    /* Pequeño “tip” abajo */
     .mini-tip {
       margin-top: 10px;
       font-size: 11.5px;
@@ -201,7 +199,6 @@
       <label>Contraseña:</label>
       <div class="password-wrapper">
         <input type="password" id="password" required placeholder="Tu contraseña">
-        <!-- 👁️ Ojito -->
         <button type="button" id="togglePassword" class="toggle-password">
           <svg id="eyeIcon" width="22" height="22" viewBox="0 0 24 24">
             <path fill="#1f4a56" d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7zm11 5a5 5 0 110-10 5 5 0 010 10z"/>
@@ -246,15 +243,14 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const email = document.getElementById("email").value;
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      // feedback en botón
       submitBtn.disabled = true;
       const originalText = submitBtn.textContent;
       submitBtn.textContent = "Ingresando...";
-
       message.textContent = "";
+      message.style.color = "red";
 
       try {
         const res = await fetch("/login", {
@@ -263,22 +259,38 @@
           body: JSON.stringify({ email, password })
         });
 
-        const data = await res.json();
-
-        if (res.ok) {
-          // ✅ Guardar usuario en localStorage
-          localStorage.setItem("usuario", JSON.stringify(data.usuario));
-
-          // ✅ Redirigir a la página principal
-          window.location.href = "index.html";
-        } else {
-          message.style.color = "red";
-          message.textContent = data.error || "Error al iniciar sesión";
+        let data;
+        try {
+          data = await res.json();
+        } catch (e) {
+          message.textContent = "Respuesta inesperada del servidor.";
           submitBtn.disabled = false;
           submitBtn.textContent = originalText;
+          return;
         }
+
+        if (!res.ok || !data || data.ok === false) {
+          message.textContent = (data && data.error) || "Error al iniciar sesión";
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+          return;
+        }
+
+        // ✅ Guardar usuario (por si lo quieres usar en el front)
+        if (data.usuario) {
+          localStorage.setItem("usuario", JSON.stringify(data.usuario));
+        }
+
+        // ✅ Redirección según tipo de usuario
+        if (data.esAdmin) {
+          // Admin -> panel de administración
+          window.location.href = "/admin";
+        } else {
+          // Usuario normal -> página principal
+          window.location.href = "index.html";
+        }
+
       } catch (err) {
-        message.style.color = "red";
         message.textContent = "Error de conexión con el servidor";
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
