@@ -73,22 +73,9 @@ npm install
 node app.js
 
 5. Ejecución
+Al iniciar, el sistema mostrara la pagina donde estan los productos.
 
-Al iniciar, el sistema solicitará iniciar sesión o registrarse.
 
-Accesos principales:
-Función	URL
-Tienda	http://localhost:3000
-
-Login	http://localhost:3000/login.html
-
-Registro	http://localhost:3000/registro.html
-
-Mis pedidos	http://localhost:3000/mis-pedidos.html
-
-Pago de pedido	http://localhost:3000/pago.html
-
-Panel Admin	http://localhost:3000/admin
 Estructura del proyecto
 ViveSalud
     ├── vive_salud.sql
