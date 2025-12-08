@@ -276,9 +276,9 @@
           return;
         }
 
-        // ✅ Guardar usuario (por si lo quieres usar en el front)
+        // ✅ Guardar usuario sólo en la SESIÓN (se borra al cerrar pestaña/navegador)
         if (data.usuario) {
-          localStorage.setItem("usuario", JSON.stringify(data.usuario));
+          sessionStorage.setItem("usuario", JSON.stringify(data.usuario));
         }
 
         // ✅ Redirección según tipo de usuario

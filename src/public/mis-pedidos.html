@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mis pedidos - Vive+Salud</title>
+  <style>
+    :root {
+      --primary: #2b6777;
+      --primary-dark: #1f4a56;
+      --accent: #52ab98;
+      --accent-soft: rgba(82,171,152,0.15);
+      --bg: #f2f6f9;
+      --card-bg: #ffffff;
+      --text-main: #1c2733;
+      --text-muted: #6b7380;
+      --danger: #e11d48;
+      --success: #16a34a;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 12px 32px rgba(15,23,42,0.16);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(82, 171, 152, 0.18), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(43, 103, 119, 0.16), transparent 55%),
+        var(--bg);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 10px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 22px 24px 20px;
+      max-width: 900px;
+      width: 100%;
+      border: 1px solid rgba(148,163,184,0.25);
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1::before {
+      content: "🧾";
+      font-size: 22px;
+    }
+
+    .subtitle {
+      margin: 0 0 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .usuario-info {
+      font-size: 13px;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+    }
+
+    .usuario-info strong {
+      color: var(--primary-dark);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    thead {
+      background: #f9fafb;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    .estado-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .estado-pendiente {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .estado-pagado {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .estado-cancelado {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 6px 12px;
+      border: none;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primario {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 6px 14px rgba(15,23,42,0.3);
+    }
+
+    .btn-primario:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-link {
+      background: transparent;
+      color: var(--primary-dark);
+      border: 1px solid rgba(148,163,184,0.6);
+    }
+
+    .btn-link:hover {
+      background: rgba(148,163,184,0.08);
+    }
+
+    .acciones {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .sin-pedidos {
+      text-align: center;
+      padding: 20px 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .footer-links a {
+      color: var(--primary-dark);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== MODAL DETALLE PEDIDO ===== */
+
+    .detalle-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .detalle-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .detalle-modal {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 18px 50px rgba(15,23,42,0.5);
+      width: min(520px, 100% - 32px);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(148,163,184,0.35);
+      overflow: hidden;
+      animation: detalleIn 0.18s ease-out;
+    }
+
+    @keyframes detalleIn {
+      from { transform: translateY(8px) scale(0.98); opacity: 0; }
+      to   { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .detalle-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #ffffff, #e0f2f1);
+    }
+
+    .detalle-titles h2 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detalle-titles h2::before {
+      content: "🧾";
+      font-size: 18px;
+    }
+
+    .detalle-subtitle {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .detalle-close {
+      border: none;
+      background: transparent;
+      font-size: 22px;
+      cursor: pointer;
+      color: #6b7280;
+    }
+
+    .detalle-body {
+      padding: 14px 18px 10px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+
+    .detalle-section {
+      margin-bottom: 10px;
+    }
+
+    .detalle-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 0 4px;
+      color: var(--primary-dark);
+    }
+
+    .detalle-section p {
+      margin: 2px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .detalle-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+      font-size: 12px;
+    }
+
+    .detalle-table th,
+    .detalle-table td {
+      padding: 6px 6px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    .detalle-table th {
+      background: #f9fafb;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .detalle-footer {
+      padding: 10px 18px 12px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      background: #f9fafb;
+    }
+
+    .detalle-total strong {
+      font-size: 15px;
+      color: var(--primary-dark);
+    }
+
+    @media (max-width: 700px) {
+      .card {
+        padding: 18px 14px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 6px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Mis pedidos</h1>
+    <p class="subtitle">
+      Aquí puedes consultar tus pedidos realizados en Vive+Salud, tanto pendientes como pagados.
+    </p>
+
+    <div class="usuario-info" id="infoUsuario"></div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyPedidos">
+        <tr>
+          <td colspan="5" class="sin-pedidos">
+            Cargando tus pedidos...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-links">
+      <div>
+        <a href="index.html">← Volver a la tienda</a>
+      </div>
+      <div>
+        <a href="checkout.html">Ir a pantalla de pago manualmente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLE PEDIDO -->
+  <div id="detalleOverlay" class="detalle-overlay">
+    <div class="detalle-modal">
+      <div class="detalle-header">
+        <div class="detalle-titles">
+          <h2>Pedido #<span id="detId"></span></h2>
+          <p id="detFecha" class="detalle-subtitle"></p>
+        </div>
+        <button id="detalleCerrar" class="detalle-close">&times;</button>
+      </div>
+      <div id="detalleBody" class="detalle-body">
+        <!-- Se rellena por JS -->
+      </div>
+      <div class="detalle-footer">
+        <div class="detalle-total">
+          Total: <strong id="detTotal">$0.00</strong>
+        </div>
+        <div id="detEstadoWrapper">
+          <span id="detEstadoBadge" class="estado-badge estado-pendiente">pendiente</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function obtenerUsuarioActual() {
+      try {
+        return JSON.parse(sessionStorage.getItem("usuario") || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function formatearFecha(fechaStr) {
+      if (!fechaStr) return "";
+      const fecha = new Date(fechaStr);
+      if (isNaN(fecha.getTime())) return fechaStr;
+      return fecha.toLocaleString();
+    }
+
+    function formatearPrecio(num) {
+      const n = Number(num || 0);
+      return "$" + n.toFixed(2);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const usuario = obtenerUsuarioActual();
+      const infoUsuario = document.getElementById("infoUsuario");
+      const tbody = document.getElementById("tbodyPedidos");
+
+      // elementos del modal
+      const overlay = document.getElementById("detalleOverlay");
+      const detIdSpan = document.getElementById("detId");
+      const detFechaP = document.getElementById("detFecha");
+      const detTotalSpan = document.getElementById("detTotal");
+      const detEstadoBadge = document.getElementById("detEstadoBadge");
+      const detalleBody = document.getElementById("detalleBody");
+      const btnCerrarDetalle = document.getElementById("detalleCerrar");
+
+      function cerrarDetalle() {
+        overlay.classList.remove("visible");
+      }
+
+      btnCerrarDetalle.addEventListener("click", cerrarDetalle);
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) cerrarDetalle();
+      });
+
+      // Si no hay usuario en sessionStorage, mandamos a login
+      if (!usuario) {
+        alert("Debes iniciar sesión para ver tus pedidos.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      infoUsuario.innerHTML = `
+        Sesión iniciada como <strong>${usuario.nombre_completo}</strong> (${usuario.email})
+      `;
+
+      cargarMisPedidos();
+
+      async function cargarMisPedidos() {
+        try {
+          const res = await fetch("/api/mis-pedidos");
+          const data = await res.json();
+
+          if (!res.ok) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="5" class="sin-pedidos">
+                  ${data.error || "No se pudieron obtener tus pedidos."}
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="5" class="sin-pedidos">
+                  Aún no tienes pedidos registrados.
+                </td>
+              </tr>
+            `;
+            return;
+          }
+
+          tbody.innerHTML = "";
+
+          data.forEach(p => {
+            const tr = document.createElement("tr");
+
+            const estado = (p.estado || "").toLowerCase();
+            let claseEstado = "estado-pendiente";
+            if (estado === "pagado") claseEstado = "estado-pagado";
+            if (estado === "cancelado") claseEstado = "estado-cancelado";
+
+            tr.innerHTML = `
+              <td>${p.id}</td>
+              <td>${formatearFecha(p.fecha)}</td>
+              <td>${formatearPrecio(p.total)}</td>
+              <td>
+                <span class="estado-badge ${claseEstado}">
+                  ${p.estado}
+                </span>
+              </td>
+              <td>
+                <div class="acciones">
+                  <button class="btn btn-link btn-ver" data-id="${p.id}">
+                    Ver detalle
+                  </button>
+                  ${
+                    estado === "pendiente"
+                      ? `<button class="btn btn-primario btn-pagar" data-id="${p.id}">
+                           Ir a pagar
+                         </button>`
+                      : ""
+                  }
+                </div>
+              </td>
+            `;
+
+            tbody.appendChild(tr);
+          });
+
+          // Ver detalle -> ahora abre panel bonito
+          tbody.querySelectorAll(".btn-ver").forEach(btn => {
+            btn.addEventListener("click", async () => {
+              const id = btn.dataset.id;
+              try {
+                const resDet = await fetch("/api/pedidos/" + id);
+                const dataDet = await resDet.json();
+                if (!resDet.ok || !dataDet.ok) {
+                  alert(dataDet.error || "No se pudo cargar el detalle.");
+                  return;
+                }
+
+                const pedido = dataDet.pedido;
+                const detalles = dataDet.detalles || [];
+
+                // header
+                detIdSpan.textContent = pedido.id;
+                detFechaP.textContent = "Realizado el " + formatearFecha(pedido.fecha);
+                detTotalSpan.textContent = formatearPrecio(pedido.total);
+
+                const estadoPedido = (pedido.estado || "").toLowerCase();
+                detEstadoBadge.textContent = pedido.estado;
+                detEstadoBadge.className = "estado-badge " +
+                  (estadoPedido === "pagado"
+                    ? "estado-pagado"
+                    : estadoPedido === "cancelado"
+                    ? "estado-cancelado"
+                    : "estado-pendiente");
+
+                // cuerpo: datos cliente + tabla productos
+                const htmlCliente = `
+                  <div class="detalle-section">
+                    <p class="detalle-section-title">Datos del cliente</p>
+                    <p><strong>Nombre:</strong> ${usuario.nombre_completo}</p>
+                    <p><strong>Correo:</strong> ${usuario.email}</p>
+                  </div>
+                `;
+
+                const filas = detalles.map(d => `
+                  <tr>
+                    <td>${d.nombre_producto}</td>
+                    <td>${d.cantidad}</td>
+                    <td>${formatearPrecio(d.precio)}</td>
+                    <td>${formatearPrecio(d.subtotal)}</td>
+                  </tr>
+                `).join("");
+
+                const htmlTabla = `
+                  <div class="detalle-section">
+                    <p class="detalle-section-title">Productos del pedido</p>
+                    <table class="detalle-table">
+                      <thead>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Cant.</th>
+                          <th>Precio</th>
+                          <th>Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${filas || `<tr><td colspan="4">No hay productos registrados en este pedido.</td></tr>`}
+                      </tbody>
+                    </table>
+                  </div>
+                `;
+
+                detalleBody.innerHTML = htmlCliente + htmlTabla;
+
+                overlay.classList.add("visible");
+              } catch (err) {
+                console.error(err);
+                alert("Error de conexión al obtener el detalle del pedido.");
+              }
+            });
+          });
+
+          // Ir a pagar: redirige a checkout.html?pedido=ID
+          tbody.querySelectorAll(".btn-pagar").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const id = btn.dataset.id;
+              window.location.href = "checkout.html?pedido=" + encodeURIComponent(id);
+            });
+          });
+
+        } catch (err) {
+          console.error(err);
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="sin-pedidos">
+                Error de conexión al cargar tus pedidos.
+              </td>
+            </tr>
+          `;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

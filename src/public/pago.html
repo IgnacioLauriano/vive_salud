@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vive+Salud - Pago</title>
+  <style>
+    :root {
+      --primary: #2b6777;
+      --primary-dark: #1f4a56;
+      --accent: #52ab98;
+      --accent-dark: #3a8b7a;
+      --bg: #f2f6f9;
+      --card-bg: #ffffff;
+      --text-main: #1c2733;
+      --text-muted: #6b7380;
+      --radius-lg: 16px;
+      --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(82, 171, 152, 0.18), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(43, 103, 119, 0.16), transparent 55%),
+        var(--bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text-main);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 14px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    header h1::before {
+      content: "💳";
+      font-size: 22px;
+    }
+
+    #headerButtons {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.3);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: var(--accent-dark);
+    }
+
+    #usuarioLogueado {
+      font-size: 13px;
+      color: #e5f4ff;
+      margin-right: 4px;
+    }
+
+    .container {
+      width: min(900px, 92%);
+      margin: 32px auto 48px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 24px;
+      color: var(--primary-dark);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px 24px;
+      box-shadow: var(--shadow-soft);
+      margin-top: 16px;
+    }
+
+    .resumen {
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+
+    .resumen strong {
+      font-size: 17px;
+      color: var(--primary-dark);
+    }
+
+    .tag-pendiente {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f97316;
+      color: white;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-left: 6px;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 16px;
+      margin-top: 12px;
+    }
+
+    form .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      font-size: 13px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(82,171,152,0.3);
+    }
+
+    .btn-pagar {
+      margin-top: 10px;
+      padding: 10px 18px;
+      background: #16a34a;
+      border-radius: 999px;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-pagar:hover {
+      background: #15803d;
+    }
+
+    .info {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .sin-pedidos {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 16px;
+    }
+
+    /* MODAL BONITO */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 20px 22px 18px;
+      width: min(380px, 90%);
+      box-shadow: 0 18px 50px rgba(15,23,42,0.45);
+      text-align: left;
+      border: 1px solid rgba(148,163,184,0.3);
+      animation: modalIn 0.2s ease-out;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(6px) scale(.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .modal-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .modal-icon.info {
+      background: rgba(59,130,246,0.12);
+      color: #1d4ed8;
+    }
+
+    .modal-icon.success {
+      background: rgba(22,163,74,0.12);
+      color: #15803d;
+    }
+
+    .modal-icon.error {
+      background: rgba(239,68,68,0.12);
+      color: #b91c1c;
+    }
+
+    .modal-icon.warning {
+      background: rgba(234,179,8,0.12);
+      color: #92400e;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 16px;
+      color: var(--primary-dark);
+    }
+
+    .modal-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 6px 0 14px;
+      white-space: pre-line;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn-modal {
+      border-radius: 999px;
+      padding: 7px 14px;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-modal-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(15,23,42,0.35);
+    }
+
+    .btn-modal-primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-modal-secondary {
+      background: #f3f4f6;
+      color: var(--text-main);
+    }
+
+    .btn-modal-secondary:hover {
+      background: #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Pago de pedido</h1>
+  <div id="headerButtons">
+    <span id="usuarioLogueado"></span>
+    <a href="/" class="btn">Volver a la tienda</a>
+    <button class="btn" id="btnCerrarSesion">Cerrar sesión</button>
+  </div>
+</header>
+
+<div class="container">
+  <h2>💚 Completa tu pago</h2>
+
+  <div id="estadoPedido" class="sin-pedidos">
+    Buscando si tienes algún pedido pendiente...
+  </div>
+
+  <div id="pagoFormWrapper" class="card" style="display:none;">
+    <div class="resumen">
+      Pedido <strong>#<span id="pedidoIdSpan"></span></strong>
+      <span class="tag-pendiente">pendiente</span><br />
+      Total a pagar: <strong id="pedidoTotalSpan">$0.00</strong>
+    </div>
+
+    <form id="formPago">
+      <div class="full">
+        <label for="metodo">Método de pago</label>
+        <select id="metodo" required>
+          <option value="">Selecciona un método</option>
+          <option value="tarjeta">Tarjeta de crédito / débito</option>
+          <option value="transferencia">Transferencia bancaria</option>
+          <option value="oxxo">Pago en OXXO (simulado)</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <label for="titular">Nombre del titular</label>
+        <input id="titular" type="text" placeholder="Como aparece en la tarjeta" required />
+      </div>
+
+      <div>
+        <label for="tarjeta">Número de tarjeta</label>
+        <input id="tarjeta" type="text" maxlength="16" placeholder="1111 2222 3333 4444" required />
+      </div>
+
+      <div>
+        <label for="cvv">CVV</label>
+        <input id="cvv" type="password" maxlength="4" placeholder="***" required />
+      </div>
+
+      <div>
+        <label for="fecha">Fecha de expiración</label>
+        <input id="fecha" type="text" placeholder="MM/AA" required />
+      </div>
+
+      <div class="full">
+        <button type="submit" class="btn-pagar">
+          Confirmar pago ✅
+        </button>
+        <div class="info">
+          *Este pago es solo una simulación para la práctica de la materia.
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="feedbackModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div id="modalIcon" class="modal-icon info">ℹ️</div>
+      <h3 id="modalTitle" class="modal-title">Mensaje</h3>
+    </div>
+    <div id="modalMessage" class="modal-body"></div>
+    <div class="modal-actions">
+      <button id="modalPrimary" class="btn-modal btn-modal-primary">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  /* ========= MODAL UTIL ========= */
+  const modalOverlay  = document.getElementById("feedbackModal");
+  const modalIcon     = document.getElementById("modalIcon");
+  const modalTitle    = document.getElementById("modalTitle");
+  const modalMessage  = document.getElementById("modalMessage");
+  const modalPrimary  = document.getElementById("modalPrimary");
+
+  function showModal({ title, message, type = "info", primaryText = "Aceptar", onPrimary }) {
+    modalTitle.textContent = title || "Mensaje";
+    modalMessage.textContent = message || "";
+    modalPrimary.textContent = primaryText || "Aceptar";
+
+    modalIcon.className = "modal-icon " + type;
+    if (type === "success") modalIcon.textContent = "✅";
+    else if (type === "error") modalIcon.textContent = "⚠️";
+    else if (type === "warning") modalIcon.textContent = "⚠️";
+    else modalIcon.textContent = "ℹ️";
+
+    modalOverlay.classList.add("visible");
+
+    const handleClick = () => {
+      modalOverlay.classList.remove("visible");
+      modalPrimary.removeEventListener("click", handleClick);
+      if (typeof onPrimary === "function") onPrimary();
+    };
+
+    modalPrimary.addEventListener("click", handleClick);
+  }
+
+  function obtenerUsuarioActual() {
+    try {
+      return JSON.parse(sessionStorage.getItem("usuario") || "null");
+    } catch (e) {
+      console.error("Error leyendo usuario:", e);
+      return null;
+    }
+  }
+
+  const usuario = obtenerUsuarioActual();
+  const usuarioSpan = document.getElementById("usuarioLogueado");
+  const btnCerrar = document.getElementById("btnCerrarSesion");
+
+  if (!usuario) {
+    showModal({
+      title: "Inicia sesión",
+      message: "Debes iniciar sesión para ver tus pedidos.",
+      type: "warning",
+      primaryText: "Ir a iniciar sesión",
+      onPrimary: () => {
+        window.location.href = "/login.html";
+      }
+    });
+    return;
+  }
+
+  usuarioSpan.textContent = `Hola, ${usuario.nombre_completo}`;
+
+  btnCerrar.addEventListener("click", () => {
+    sessionStorage.removeItem("usuario");
+    sessionStorage.removeItem("carrito_vive_salud");
+    sessionStorage.removeItem("pedido_pendiente");
+    window.location.href = "/";
+  });
+
+  const estadoPedidoDiv = document.getElementById("estadoPedido");
+  const pagoWrapper = document.getElementById("pagoFormWrapper");
+  const pedidoIdSpan = document.getElementById("pedidoIdSpan");
+  const pedidoTotalSpan = document.getElementById("pedidoTotalSpan");
+  const formPago = document.getElementById("formPago");
+
+  let pedidoPendiente = null;
+
+  function mostrarPedido(p) {
+    pedidoPendiente = p;
+    pedidoIdSpan.textContent   = p.id;
+    pedidoTotalSpan.textContent = `$${Number(p.total).toFixed(2)}`;
+    estadoPedidoDiv.textContent = "Tienes un pedido pendiente de pago:";
+    pagoWrapper.style.display   = "block";
+  }
+
+  async function cargarPedidoPendiente() {
+    // 1) Revisar si viene de la tienda (sessionStorage)
+    try {
+      const guardado = sessionStorage.getItem("pedido_pendiente");
+      if (guardado) {
+        const p = JSON.parse(guardado);
+        if (p && p.id) {
+          mostrarPedido(p);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Error leyendo pedido_pendiente:", e);
+    }
+
+    // 2) Si no hay en storage, consultar en la BD
+    try {
+      const res = await fetch("/api/mis-pedidos-pendientes");
+      if (res.status === 401) {
+        showModal({
+          title: "Sesión requerida",
+          message: "Debes iniciar sesión para ver tus pedidos.",
+          type: "warning",
+          primaryText: "Ir a iniciar sesión",
+          onPrimary: () => { window.location.href = "/login.html"; }
+        });
+        return;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        estadoPedidoDiv.textContent = "No tienes pedidos pendientes de pago.";
+        return;
+      }
+
+      // Tomamos el más reciente
+      const p = data[0];
+      const pedidoSimple = {
+        id: p.id,
+        total: Number(p.total),
+      };
+
+      // Lo guardamos para reutilizar
+      sessionStorage.setItem("pedido_pendiente", JSON.stringify(pedidoSimple));
+      mostrarPedido(pedidoSimple);
+    } catch (error) {
+      console.error("Error al cargar pedidos pendientes:", error);
+      estadoPedidoDiv.textContent = "Error al consultar tus pedidos.";
+    }
+  }
+
+  formPago.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!pedidoPendiente) {
+      showModal({
+        title: "Sin pedido pendiente",
+        message: "No se encontró un pedido pendiente para pagar.",
+        type: "warning"
+      });
+      return;
+    }
+
+    // Validación sencilla (simulación)
+    const metodo  = document.getElementById("metodo").value.trim();
+    const titular = document.getElementById("titular").value.trim();
+    const tarjeta = document.getElementById("tarjeta").value.trim();
+    const cvv     = document.getElementById("cvv").value.trim();
+    const fecha   = document.getElementById("fecha").value.trim();
+
+    if (!metodo || !titular || !tarjeta || !cvv || !fecha) {
+      showModal({
+        title: "Datos incompletos",
+        message: "Por favor completa todos los datos de pago.",
+        type: "warning"
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/pedidos/pagar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pedido_id: pedidoPendiente.id }),
+      });
+
+      const data = await res.json();
+      console.log("Respuesta /api/pedidos/pagar:", data);
+
+      if (!res.ok || !data.ok) {
+        showModal({
+          title: "No se pudo registrar el pago",
+          message: data.error || "Ocurrió un problema al registrar el pago.",
+          type: "error"
+        });
+        return;
+      }
+
+      showModal({
+        title: "Pago registrado",
+        message: "Pago registrado correctamente. ¡Gracias por tu compra!",
+        type: "success",
+        primaryText: "Volver a la tienda",
+        onPrimary: () => {
+          sessionStorage.removeItem("pedido_pendiente");
+          window.location.href = "/";
+        }
+      });
+
+    } catch (error) {
+      console.error("Error al registrar pago:", error);
+      showModal({
+        title: "Error de conexión",
+        message: "Error de conexión al registrar el pago.",
+        type: "error"
+      });
+    }
+  });
+
+  cargarPedidoPendiente();
+});
+</script>
+</body>
+</html>

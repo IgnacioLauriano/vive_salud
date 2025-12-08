@@ -1,266 +1,256 @@
-# Vive+Salud
-
-## Descripción
-
-**Vive+Salud** es un proyecto backend desarrollado con **Node.js**, **Express** y **MySQL** que sirve como base para un sistema de gestión de un emprendimiento de bienestar y salud.
-
-Incluye:
-
-- Conexión a la base de datos `vive_salud`.
-- Panel de administración protegido (`/admin`) con CRUD completo de:
-  - **Productos**
-  - **Categorías**
-  - **Clientes / Usuarios**
-- Formularios web para crear, visualizar, actualizar y eliminar registros.
-- Autenticación de usuarios con contraseñas encriptadas.
+# Vive+Salud 🩺🛒  
+Tienda web de bienestar digital desarrollada con **Node.js + Express** y **MySQL**.  
+Permite a los usuarios registrarse, iniciar sesión, comprar productos digitales y
+consultar sus pedidos, mientras que el administrador gestiona el catálogo y las
+ventas.
 
 ---
 
-## Características principales
+## 1. Tecnologías principales
 
-- ✅ Backend en **Node.js + Express** con ES Modules.
-- ✅ Conexión a **MySQL** usando `express-myconnection`.
-- ✅ **Autenticación** de usuarios (login) usando `bcrypt` y **sesiones**.
-- ✅ Panel de administración accesible solo para usuarios autenticados.
-- ✅ CRUD completo:
-  - Productos (`abc_products`, `abc_product_descriptions`)
-  - Categorías (`abc_categories`, `abc_category_descriptions`)
-  - Clientes (`usuarios`)
-- ✅ Frontend básico:
-  - Página pública (`index.html`)
-  - Login (`login.html`)
-  - Registro (`registro.html`)
-  - Panel admin (`admin.html`).
+- **Backend:** Node.js, Express, express-myconnection, express-session, bcrypt
+- **Base de datos:** MySQL
+- **Frontend:** HTML, CSS, JavaScript plano
+- **Modelo de datos principal:** Tablas `abc_*` (catálogo de productos AbanteCart),
+  más tablas propias `usuarios`, `pedidos` y `pedido_detalles`.
 
 ---
 
-## Tecnologías utilizadas
+## 2. Estructura del proyecto
 
-- **Node.js** v18+  
-- **Express**  
-- **MySQL** 8+  
-- **express-myconnection** – conexión a MySQL  
-- **morgan** – logs HTTP  
-- **express-session** – manejo de sesión  
-- **bcrypt** – encriptado de contraseñas  
-- **HTML + CSS** – interfaz básica para cliente y administrador  
+```text
+NODE.JS/
+├─ db/
+│  ├─ Vive_Salud.mwb        # Modelo de la base de datos (MySQL Workbench)
+│  └─ Vive_Salud.sql        # Script SQL para crear y poblar la BD
+│
+├─ src/
+│  ├─ app.js                # Servidor Express principal
+│  ├─ config/               # Configuración (DB, variables comunes)
+│  ├─ controllers/          # Lógica de control por módulo (versión MVC)
+│  ├─ middlewares/          # Middlewares de autenticación y otros
+│  ├─ models/               # Modelos de acceso a datos (usuarios, etc.)
+│  ├─ public/               # Frontend estático (HTML, CSS, JS, imágenes)
+│  │  ├─ imagenes/
+│  │  ├─ js/
+│  │  │  └─ tienda.js       # Versión separada de la lógica de la tienda
+│  │  ├─ admin.html         # Panel de administración
+│  │  ├─ checkout.html      # (flujo de pago alterno / pruebas)
+│  │  ├─ index.html         # Tienda principal (productos + carrito)
+│  │  ├─ login.html         # Inicio de sesión
+│  │  ├─ mis-pedidos.html   # Listado de pedidos del cliente
+│  │  ├─ pago.html          # Pantalla de pago del pedido pendiente
+│  │  └─ registro.html      # Registro de usuarios
+│  ├─ routes/
+│  │  ├─ admin.js           # Rutas del panel admin (productos, pedidos, etc.)
+│  │  ├─ auth.js            # Rutas de autenticación (login/logout) versión MVC
+│  │  ├─ productos.js       # Rutas de productos versión MVC
+│  │  └─ usuarios.js        # Rutas de usuarios versión MVC
+│  └─ views/                # (Reservado para vistas si se usa motor de plantillas)
+│
+├─ package.json             # Dependencias y scripts de npm
+├─ package-lock.json
+└─ README.md                # Este archivo
+3. Descripción por carpeta / archivo
+/db
+Vive_Salud.mwb
+Archivo de diseño de la base de datos en MySQL Workbench.
 
----
+Vive_Salud.sql
+Script para crear el esquema vive_salud y las tablas (incluye datos base del
+catálogo AbanteCart).
 
-## Requisitos previos
+src/app.js
+Archivo principal del servidor Express:
 
-- Node.js 18 o superior
-- MySQL 8 o superior
-- npm (incluido con Node)
+Configura middlewares: morgan, express.json, express.urlencoded,
+express.static y express-session.
 
----
+Crea la conexión MySQL con express-myconnection.
 
-## Instalación
+Define rutas básicas:
 
-1. **Clonar el repositorio**
+/ → sirve public/index.html (tienda).
 
-```bash
-git clone https://github.com/IgnacioLauriano/vive_salud.git
-cd vive_salud/node.js
+/productos → consulta los productos y categorías desde tablas abc_*.
+
+/usuarios → registro de usuarios (insert en tabla usuarios).
+
+/login → login de usuarios, verificación con bcrypt y guardado en sesión.
+
+/logout → cierra sesión.
+
+/api/pedidos → crea pedidos y detalles en pedidos y pedido_detalles.
+
+/api/mis-pedidos y /api/mis-pedidos-pendientes → pedidos del usuario logueado.
+
+/api/pedidos/:id → detalle de un pedido.
+
+/api/pedidos/:id/pagar → marca un pedido como pagado.
+
+Monta el router de administrador: app.use("/admin", adminRouter);
+
+Arranca el servidor en el puerto 3000.
+
+En resumen, aquí se orquesta toda la lógica del backend y la comunicación con la BD.
+
+src/config/
+Carpeta pensada para centralizar configuración:
+
+Parámetros de conexión a la base de datos.
+
+Otras constantes o configuraciones reutilizables.
+
+(Dependiendo de la versión del proyecto, parte de esta configuración puede estar directamente en app.js.)
+
+src/controllers/
+Controladores para una versión más organizada tipo MVC:
+
+authController.js
+Funciones para login, logout, registro, verificación de sesión, etc.
+
+productosController.js
+Funciones que leen y gestionan productos desde las tablas abc_products,
+abc_product_descriptions, abc_products_to_categories, etc.
+
+En la versión actual muchas rutas ya están definidas directamente en app.js, pero estos controladores permiten separar la lógica si se desea refactorizar.
+
+src/middlewares/
+auth.js
+Middlewares de autenticación (por ejemplo, verificar si el usuario está logueado o si es admin) para proteger rutas del panel de administración.
+
+src/models/
+Usuario.js
+Modelo de acceso a datos de la tabla usuarios.
+Centraliza consultas como crear usuario, buscar por email, etc.
+
+src/public/ (Frontend)
+Todo lo que se sirve directamente al navegador:
+
+imagenes/
+Recursos gráficos de la tienda y del panel admin.
+
+js/tienda.js
+Versión separada del JavaScript de la tienda (manejo de carrito, etc.).
+En la versión actual, gran parte de esa lógica también está embebida en
+index.html.
+
+index.html
+Página principal de la tienda:
+
+Muestra el catálogo de productos consumiendo /productos.
+
+Implementa el carrito lateral con stock, sumas/restas y validaciones.
+
+Llama a /api/pedidos para crear el pedido antes de ir a la pantalla de pago.
+
+Controla la sesión en el frontend (muestra botones de login, logout, etc.).
+
+login.html / registro.html
+Formularios para que el usuario inicie sesión y se registre.
+Se comunican con /login y /usuarios del backend.
+
+mis-pedidos.html
+Lista todos los pedidos del usuario logueado usando /api/mis-pedidos.
+Permite ver los detalles de un pedido y, si está pendiente, ir a pagarlo.
+
+pago.html
+Pantalla donde el usuario paga un pedido pendiente:
+
+Lee el pedido pendiente desde sessionStorage o desde /api/mis-pedidos-pendientes.
+
+Simula el formulario de pago.
+
+Llama a /api/pedidos/pagar para marcar el pedido como pagado.
+
+checkout.html
+Flujo alterno de pago utilizado en pruebas.
+Muestra un resumen del carrito directamente y crea/paga el pedido en una sola pantalla.
+
+admin.html
+Panel de administración:
+
+Gestión del catálogo (productos, stock, etc.) a través de /admin.
+
+Consulta de pedidos, cambio de estado, etc.
+
+src/routes/
+Routers Express separados (útiles si se adopta por completo el patrón MVC):
+
+admin.js
+Rutas del panel de administración.
+Gestiona productos, categorías, stock y pedidos desde la interfaz admin.
+
+auth.js / productos.js / usuarios.js
+Rutas agrupadas por módulo (autenticación, productos, usuarios) que pueden
+reemplazar o complementar las rutas definidas en app.js.
+
+src/views/
+Carpeta reservada para plantillas si más adelante se usa un motor como EJS,
+Pug, Handlebars, etc.
+Actualmente la app usa HTML estático en public/, por lo que esta carpeta puede estar vacía o contener pruebas.
+
+4. Flujo principal de la aplicación
+Registro / Login
+
+El usuario se registra en registro.html → /usuarios.
+
+Inicia sesión en login.html → /login, se guarda la sesión en backend y datos básicos en sessionStorage.
+
+Navegación por la tienda
+
+index.html consulta /productos y muestra el catálogo organizado por categorías.
+
+El usuario agrega productos al carrito (validando stock).
+
+Creación del pedido
+
+Desde el carrito, al dar clic en “Finalizar”, se llama a /api/pedidos.
+
+Se crean registros en pedidos y pedido_detalles y se guarda un
+pedido_pendiente en sessionStorage.
+
+Pago
+
+El usuario es redirigido a pago.html, que busca el pedido pendiente y
+simula el formulario de pago.
+
+Al enviar, se llama a /api/pedidos/pagar para marcar el pedido como
+pagado.
+
+Consulta de pedidos
+
+En mis-pedidos.html el usuario ve todo su historial (/api/mis-pedidos) y
+puede visualizar el detalle de cada compra.
+
+5. Ejecución del proyecto
 Instalar dependencias
 
 bash
 Copiar código
 npm install
-Configurar la base de datos MySQL
+Crear base de datos
 
-Puedes ejecutar el script SQL del proyecto (donde se crean tablas, datos de ejemplo y el usuario de BD).
-O bien, crear la BD y el usuario manualmente:
+Crear un esquema MySQL llamado vive_salud.
 
-sql
-Copiar código
-CREATE DATABASE IF NOT EXISTS vive_salud
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+Importar db/Vive_Salud.sql.
 
-CREATE USER IF NOT EXISTS 'vive_salud'@'localhost' IDENTIFIED BY '12345';
-GRANT ALL PRIVILEGES ON vive_salud.* TO 'vive_salud'@'localhost';
-FLUSH PRIVILEGES;
-El script del proyecto también crea y llena tablas como abc_products, abc_categories, abc_product_descriptions, abc_category_descriptions y usuarios.
+Configurar conexión
 
-Configurar Node.js como ES Modules
+Revisar credenciales de conexión en src/app.js (host, user, password, database) y ajustarlas a tu entorno MySQL.
 
-En package.json debe existir:
-
-json
-Copiar código
-{
-  "type": "module",
-  ...
-}
-Ejecución
-Para iniciar el servidor:
+Arrancar el servidor
 
 bash
 Copiar código
+node src/app.js
+# o, si en package.json existe el script:
 npm start
-Por defecto, el servidor corre en:
+Abrir la aplicación
 
-Servidor: http://localhost:3000/
+Navegar a http://localhost:3000 para ver la tienda.
 
-Prueba de conexión a BD: http://localhost:3000/test-db
+http://localhost:3000/admin.html para el panel de administración.
 
-Estructura del proyecto
-bash
-Copiar código
-node.js/
-│
-├─ src/
-│  ├─ app.js               # Archivo principal del servidor Express
-│  ├─ routes/
-│  │   └─ admin.js         # Rutas del panel de administración (CRUD catálogos)
-│  ├─ middlewares/
-│  │   └─ auth.js          # Middleware de autenticación (isAuthenticated)
-│  └─ ...
-│
-├─ public/
-│  ├─ index.html           # Página principal / vista pública
-│  ├─ login.html           # Pantalla de inicio de sesión
-│  ├─ registro.html        # Pantalla de registro de usuario
-│  └─ admin.html           # Panel de administración (Productos, Categorías, Clientes)
-│
-├─ package.json            # Dependencias y scripts
-└─ README.md               # Documentación del proyecto
-Rutas principales
-Rutas públicas (frontend)
-GET /
-Devuelve public/index.html.
+http://localhost:3000/mis-pedidos.html para los pedidos del usuario.
 
-GET /login.html
-Formulario de inicio de sesión (cliente/admin).
-
-GET /registro.html
-Formulario de registro de nuevos usuarios.
-
-GET /productos
-Devuelve en JSON el listado de productos (JOIN de tablas de productos y categorías) para mostrar en la parte pública.
-
-Autenticación
-POST /usuarios
-Registra un nuevo usuario.
-
-Hashea la contraseña con bcrypt.
-
-Inserta en tabla usuarios.
-
-POST /login
-Valida email y contraseña:
-
-Verifica en tabla usuarios.
-
-Compara contraseña con bcrypt.
-
-Guarda el usuario en req.session.user.
-
-GET /logout (si está configurada)
-Cierra la sesión de usuario.
-
-El middleware isAuthenticated se usa para proteger las rutas del panel admin.
-
-Panel de administración /admin
-GET /admin
-
-Requiere sesión activa.
-
-Devuelve admin.html con el nombre del usuario en el encabezado.
-
-Desde aquí se tiene un menú para Productos, Categorías y Clientes.
-
-CRUD Productos
-GET /admin/productos
-Lista productos con: id, name, model, price, quantity.
-
-POST /admin/productos
-Crea un nuevo producto:
-
-Inserta en abc_products (model, sku, price, quantity).
-
-Inserta en abc_product_descriptions (name).
-
-PUT /admin/productos/:id
-Actualiza los datos del producto y su descripción.
-
-DELETE /admin/productos/:id
-Elimina el producto y su descripción ligada.
-
-CRUD Categorías
-GET /admin/categorias
-Lista categorías con: id, parent_id, status, name, description.
-
-POST /admin/categorias
-Crea una nueva categoría (abc_categories + abc_category_descriptions).
-
-PUT /admin/categorias/:id
-Actualiza categoría y su descripción.
-
-DELETE /admin/categorias/:id
-Elimina la categoría.
-
-CRUD Clientes
-GET /admin/clientes
-Lista registros de la tabla usuarios.
-
-POST /admin/clientes
-Crea un nuevo cliente (usuario) en la tabla usuarios.
-
-PUT /admin/clientes/:id
-Actualiza datos del cliente (nombre, email, teléfono).
-
-DELETE /admin/clientes/:id
-Elimina un cliente.
-
-Uso básico del panel admin
-Crear un usuario (por registro o manualmente en BD).
-
-Iniciar sesión desde login.html.
-
-Al iniciar sesión correctamente, acceder a /admin.
-
-Desde el panel:
-
-Productos: crear/editar/eliminar productos (nombre, modelo, precio, stock).
-
-Categorías: gestionar categorías con nombre, descripción, padre y estado.
-
-Clientes: gestionar registros de la tabla usuarios.
-
-Todo lo que se modifica en el panel se guarda directamente en MySQL.
-
-Notas de seguridad
-Las contraseñas de usuarios se almacenan hasheadas con bcrypt.
-
-El acceso a /admin y a las rutas de CRUD está protegido por sesión.
-
-Para un entorno productivo se recomienda:
-
-Usar variables de entorno para credenciales.
-
-Usar HTTPS.
-
-Configurar mejor las opciones de sesión (cookie segura, expiración, etc.).
-
-Scripts npm
-En package.json puedes tener algo como:
-
-json
-Copiar código
-"scripts": {
-  "start": "node src/app.js",
-  "dev": "nodemon src/app.js"
-}
-Para desarrollo:
-
-bash
-Copiar código
-npm run dev
-Enlace al repositorio
-Repositorio en GitHub:
-https://github.com/IgnacioLauriano/vive_salud
-
-Autor
-Proyecto desarrollado por Ignacio Méndez.

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pago - Vive+Salud</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", system-ui, sans-serif;
+      background: #f2f6f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(15,23,42,0.2);
+      padding: 24px 26px;
+      max-width: 520px;
+      width: 90%;
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      color: #1f4a56;
+      font-size: 24px;
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      color: #6b7380;
+      font-size: 13px;
+    }
+    .resumen {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      border: 1px solid #e5e7eb;
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+    .resumen-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .total {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    label {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #1c2733;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      margin-top: 4px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      font-size: 13px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #52ab98;
+      box-shadow: 0 0 0 2px rgba(82,171,152,0.25);
+    }
+    .btn {
+      margin-top: 16px;
+      width: 100%;
+      border-radius: 999px;
+      padding: 10px 14px;
+      border: none;
+      background: linear-gradient(135deg,#52ab98,#3a8b7a);
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .back-link {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 13px;
+    }
+    .back-link a {
+      color: #2b6777;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link a:hover { text-decoration: underline; }
+    #mensaje {
+      margin-top: 8px;
+      font-size: 13px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Finalizar pago</h1>
+    <p class="subtitle">Revisa tu pedido y completa los datos de pago.</p>
+
+    <div class="resumen" id="resumenPedido">
+      Cargando resumen de tu pedido...
+    </div>
+
+    <form id="paymentForm">
+      <label>Dirección de envío</label>
+      <input type="text" id="direccion" required placeholder="Calle, número, colonia">
+
+      <label>Número de tarjeta</label>
+      <input type="text" id="tarjeta" required placeholder="4111 1111 1111 1111">
+
+      <label>Nombre del titular</label>
+      <input type="text" id="nombreTitular" required placeholder="Nombre en la tarjeta">
+
+      <label>Fecha de expiración</label>
+      <input type="text" id="exp" required placeholder="MM/AA">
+
+      <label>CVC</label>
+      <input type="text" id="cvc" required placeholder="123">
+
+      <button type="submit" class="btn">Confirmar pago</button>
+    </form>
+
+    <div id="mensaje"></div>
+
+    <div class="back-link">
+      <a href="index.html">← Volver a la tienda</a>
+    </div>
+  </div>
+
+  <script>
+    const resumenDiv = document.getElementById("resumenPedido");
+    const mensaje = document.getElementById("mensaje");
+    const form = document.getElementById("paymentForm");
+
+    // Leer carrito real de sessionStorage
+    function obtenerCarrito() {
+      try {
+        return JSON.parse(sessionStorage.getItem("carrito_vive_salud") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    // Mostrar resumen del carrito
+    const carrito = obtenerCarrito();
+    if (carrito.length === 0) {
+      resumenDiv.innerHTML = "<p>No hay productos en el carrito.</p>";
+      form.style.display = "none";
+    } else {
+      let html = "";
+      let total = 0;
+
+      carrito.forEach(item => {
+        const subtotal = item.precio * item.cantidad;
+        total += subtotal;
+        html += `
+          <div class="resumen-row">
+            <span>${item.nombre} x${item.cantidad}</span>
+            <span>$${subtotal.toFixed(2)}</span>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="total">
+          <span>Total</span>
+          <span>$${total.toFixed(2)}</span>
+        </div>
+      `;
+
+      resumenDiv.innerHTML = html;
+    }
+
+    // Confirmar pago → crear pedido en backend
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      mensaje.textContent = "Procesando pago...";
+      mensaje.style.color = "#1f4a56";
+
+      const carrito = obtenerCarrito();
+      const direccion = document.getElementById("direccion").value;
+
+      try {
+        const res = await fetch("/api/pedidos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: carrito,
+            direccion
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          mensaje.style.color = "red";
+          mensaje.textContent = data.error || "Error al registrar el pedido.";
+          return;
+        }
+
+        // Pedido registrado → marcar como pagado
+        await fetch(`/api/pedidos/${data.pedidoId}/pagar`, { method: "POST" });
+
+        mensaje.style.color = "green";
+        mensaje.textContent = "✅ Pago exitoso. Redirigiendo...";
+
+        // Vaciar carrito
+        sessionStorage.removeItem("carrito_vive_salud");
+
+        setTimeout(() => {
+          window.location.href = "/mis-pedidos.html";
+        }, 1500);
+
+      } catch (err) {
+        console.error(err);
+        mensaje.style.color = "red";
+        mensaje.textContent = "Error de conexión.";
+      }
+    });
+  </script>
+</body>
+</html>
